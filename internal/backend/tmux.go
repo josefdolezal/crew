@@ -60,6 +60,11 @@ func (t *Tmux) SendInput(session, text string) error {
 	if _, err := t.run("send-keys", "-t", session, "-l", text); err != nil {
 		return err
 	}
+	// TUI composers with paste-burst detection (codex) fold an Enter that
+	// arrives within the same input burst into the pasted text instead of
+	// submitting - the message then sits rendered-but-unsubmitted forever.
+	// A short pause separates the submit keypress from the paste.
+	time.Sleep(300 * time.Millisecond)
 	_, err := t.run("send-keys", "-t", session, "Enter")
 	return err
 }

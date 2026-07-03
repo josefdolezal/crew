@@ -60,6 +60,8 @@ crew spawn probe -r bash -t "npm test 2>&1 | tail -20"
 | `exited` | Process died without reporting | `crew logs <name>` for post-mortem |
 | `timeout` | Your `--timeout` elapsed | `peek`, decide: extend, nudge, or kill |
 
+Each wait consumes one report (oldest unconsumed first); waiting again blocks for the agent's next report - safe for multi-round workflows.
+
 ### Messaging
 
 ```bash
@@ -122,6 +124,19 @@ crew wait helper --json               # -> outcome=blocked, report: "need the AP
 crew send helper "use https://api.example.com/v2"
 crew wait helper --json
 ```
+
+### 6. Multi-round loop (implement, review, fix)
+
+```bash
+crew spawn builder -r codex --worktree --yolo -f spec.md
+crew wait builder --json                          # round 1: implementation report
+crew spawn reviewer --worktree --yolo -t "Review branch crew/builder, send findings directly: crew send builder '<findings>'"
+crew wait reviewer --json                         # review delivered agent-to-agent
+crew send builder "address the review findings above, then report again"
+crew wait builder --json                          # round 2: blocks for the NEW report
+```
+
+Each wait consumes exactly one report (oldest first), so repeated waits track rounds correctly - you never get a stale "done" from a previous round. Agents can message each other directly (`crew send <agent>` works from inside sessions too); you only read reports.
 
 ## Output format
 

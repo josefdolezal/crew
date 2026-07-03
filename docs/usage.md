@@ -43,6 +43,8 @@ Tasks for LLM runtimes get a preamble prepended. It tells the agent its name and
 
 Exit code is 0 only when every named agent reported `done`, so `crew wait a b c && next-step` works in scripts.
 
+**Reports have round semantics**: each report unblocks exactly one wait, oldest first, and is consumed by it. A second `crew wait` on the same agent blocks for the *next* report - so implement → review → fix loops work without ever seeing a stale "done". A report filed while nobody was waiting is returned by the next wait immediately. Consumed reports remain visible in `crew inbox --all`; note that `crew inbox --drain` also consumes them.
+
 ## Messaging
 
 ```bash

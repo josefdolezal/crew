@@ -61,17 +61,26 @@ func (s *Store) Inbox(recipient string, unreadOnly, drain bool) ([]proto.Message
 	return msgs, nil
 }
 
-// LastReport returns the newest report message sent by an agent, or
-// ErrNotFound if it has never reported.
-func (s *Store) LastReport(sender string) (proto.Message, error) {
+// NextUnreadReport returns the oldest unconsumed report from an agent,
+// or ErrNotFound. Reports are consumed (marked read) when a wait returns
+// them or the inbox is drained, giving `crew wait` round semantics: one
+// report unblocks exactly one wait, in order.
+func (s *Store) NextUnreadReport(sender string) (proto.Message, error) {
 	row := s.db.QueryRow(
 		`SELECT id, sender, recipient, kind, status, body, created_at, read_at
-		 FROM messages WHERE sender = ? AND kind = 'report' ORDER BY id DESC LIMIT 1`, sender)
+		 FROM messages WHERE sender = ? AND kind = 'report' AND read_at IS NULL
+		 ORDER BY id LIMIT 1`, sender)
 	m, err := scanMessage(row)
 	if errors.Is(err, sql.ErrNoRows) {
 		return m, ErrNotFound
 	}
 	return m, err
+}
+
+// MarkRead consumes a single message.
+func (s *Store) MarkRead(id int64) error {
+	_, err := s.db.Exec(`UPDATE messages SET read_at = ? WHERE id = ? AND read_at IS NULL`, time.Now().Unix(), id)
+	return err
 }
 
 // DeleteMessagesFrom removes an agent's outgoing reports so a re-spawned

@@ -172,7 +172,10 @@ func (s *Server) handleWait(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if waitFor == "done" {
-			if report, err := s.store.LastReport(agent.Name); err == nil {
+			if report, err := s.store.NextUnreadReport(agent.Name); err == nil {
+				// Consume the report so the next wait blocks for the
+				// next round instead of latching onto this one.
+				_ = s.store.MarkRead(report.ID)
 				outcome := proto.WaitDone
 				if report.Status == "blocked" {
 					outcome = proto.WaitBlocked
