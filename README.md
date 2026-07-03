@@ -21,11 +21,15 @@ crew wait worker             # blocks until the agent reports done or blocked
 
 ## Quick start
 
-Requires Go 1.24+ and tmux 3.2+.
+Requires tmux 3.2+. Install with Go 1.24+:
 
 ```bash
 go install github.com/josefdolezal/crew/cmd/crew@latest
+```
 
+or download a prebuilt binary for macOS/Linux (amd64/arm64) from [Releases](https://github.com/josefdolezal/crew/releases) and put `crew` on your PATH.
+
+```bash
 crew spawn helper -t "Summarize what this repo does"   # claude is the default runtime
 crew wait helper                                       # block until it reports
 crew peek helper                                       # its rendered screen, anytime
