@@ -12,7 +12,13 @@ The script refuses to run unless you are on `main` with a clean working tree, an
 
 1. builds `crew` for darwin/linux, amd64 + arm64 (`CGO_ENABLED=0`, `-trimpath`),
 2. stamps the binary via ldflags (`crew --version` reports `0.2.0 (<commit>, <date>)`),
-3. publishes a GitHub Release with `crew_<version>_<os>_<arch>.tar.gz` archives (each bundling README, LICENSE, docs) and a `checksums.txt`.
+3. publishes a GitHub Release with `crew_<version>_<os>_<arch>.tar.gz` archives (each bundling README, LICENSE, docs) and a `checksums.txt`,
+4. pushes an updated formula to [josefdolezal/homebrew-tap](https://github.com/josefdolezal/homebrew-tap) so `brew install josefdolezal/tap/crew` serves the new version (skipped for prereleases).
+
+### Homebrew tap prerequisites (one-time)
+
+- A public `josefdolezal/homebrew-tap` repository (formulae live under `Formula/`; GoReleaser creates the file).
+- A `HOMEBREW_TAP_TOKEN` Actions secret on this repo: a token with write access to the tap (a fine-grained PAT scoped to `homebrew-tap` with Contents read/write is enough). The default `GITHUB_TOKEN` cannot push to other repositories.
 
 ## Verifying
 
@@ -36,5 +42,4 @@ Snapshot builds are versioned `<next-patch>-next` and never touch GitHub.
 
 ## What is deliberately not here
 
-- **Homebrew tap**: not set up yet. When wanted, add a `brews:` section pointing at a `josefdolezal/homebrew-tap` repository plus a `HOMEBREW_TAP_TOKEN` secret.
 - **Windows builds**: crew shells out to tmux, which has no native Windows port; WSL users are covered by the linux binaries.

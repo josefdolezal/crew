@@ -37,6 +37,24 @@ archives:
 checksum:
   name_template: checksums.txt
 
+brews:
+  - repository:
+      owner: josefdolezal
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    commit_author:
+      name: goreleaserbot
+      email: goreleaserbot@users.noreply.github.com
+    homepage: "https://github.com/josefdolezal/crew"
+    description: "Orchestrate interactive coding-agent sessions (Claude Code, Codex, pi) in tmux"
+    license: "MIT"
+    dependencies:
+      - name: tmux
+    test: |
+      system "#{bin}/crew", "--version"
+    skip_upload: auto
+
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
