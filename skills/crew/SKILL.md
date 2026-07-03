@@ -13,7 +13,7 @@ crew turns you into an orchestrator: spawn interactive agent sessions, hand them
 - The daemon autostarts on first use; no setup step.
 - Add `--json` to any command when you will parse the output. Exit codes matter: `crew wait` returns 0 only if all agents reported done.
 - If your session is long-lived or may change directories, pin your identity once via the `CREW_IDENTITY` env var so agents and inbox messages stay addressed to you.
-- **If you are running inside tmux, run `crew adopt` once at the start.** Reports, agent messages, and events then arrive in your session as `[crew] ...` lines the moment they happen - you never need to poll or hold a blocking `wait`. Not in tmux? `crew wait` (blocking, per agent) and `crew inbox` (pull) are the fallbacks.
+- **Push delivery is automatic when you run inside tmux**: your first `crew spawn` registers your session, and reports, agent messages, and events then arrive as `[crew] ...` lines the moment they happen - no polling, no blocking `wait` needed. Not in tmux? `crew wait` (blocking, per agent) and `crew inbox` (pull) are the fallbacks.
 
 ## Quick reference
 
@@ -27,7 +27,7 @@ crew turns you into an orchestrator: spawn interactive agent sessions, hand them
 | Send a follow-up instruction | `crew send <name> "<text>"` |
 | Answer a blocking dialog | `crew send <name> --key Enter` (or `crew send <name> '1'`) |
 | Read your messages | `crew inbox --drain --json` |
-| Get messages pushed to you (tmux) | `crew adopt` (once; `--off` to stop) |
+| Stop push delivery to this session | `crew adopt --off` (automatic on spawn inside tmux) |
 | List your agents | `crew list --json` (`--all` for everyone's) |
 | Full output history | `crew logs <name> -n 200` |
 | Installed version | `crew --version` |
@@ -147,7 +147,7 @@ Human-readable by default; `--json` everywhere for parsing. Errors with `--json`
 ## Notes and pitfalls
 
 - **You may not be alone**: the user can `crew attach` and type into the same session. Treat unexpected screen content as possible human intervention, not corruption.
-- **`[crew] ...` lines appearing in your input are push deliveries** (you ran `crew adopt`): act on them; the full text is in `crew inbox` if the line was truncated.
+- **`[crew] ...` lines appearing in your input are push deliveries** from your agents: act on them; the full text is in `crew inbox` if the line was truncated.
 - **Sessions survive daemon restarts** but not reboots; `gone` status means the tmux session vanished - kill the entry.
 - **Scope**: `crew list` and `crew inbox` are scoped to your identity; use `--all` to see other orchestrators' agents, but do not kill agents you did not spawn without being asked.
 - **Long tasks**: prefer `-f task.md` over huge inline `-t` strings.

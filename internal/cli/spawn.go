@@ -3,10 +3,13 @@ package cli
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
+	"github.com/josefdolezal/crew/internal/client"
 	"github.com/josefdolezal/crew/internal/gitx"
 	"github.com/josefdolezal/crew/internal/proto"
 )
@@ -22,6 +25,7 @@ func spawnCmd() *cobra.Command {
 		trust       bool
 		attach      bool
 		worktree    bool
+		noAdopt     bool
 	)
 	cmd := &cobra.Command{
 		Use:   "spawn <name>",
@@ -88,6 +92,9 @@ func spawnCmd() *cobra.Command {
 			if wtPath != "" {
 				human += fmt.Sprintf("\nworktree: %s (branch crew/%s)", wtPath, agent.Name)
 			}
+			if session, ok := autoAdopt(c, noAdopt); ok {
+				human += fmt.Sprintf("\ninbox: pushed into this tmux session (%s); disable: crew adopt --off", session)
+			}
 			human += fmt.Sprintf("\nattach: crew attach %s", agent.Name)
 			if err := okMsg(human, agent); err != nil {
 				return err
@@ -107,5 +114,25 @@ func spawnCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&trust, "trust", true, "auto-confirm runtime startup dialogs (e.g. Claude's folder-trust prompt)")
 	cmd.Flags().BoolVar(&worktree, "worktree", false, "run the agent in a fresh git worktree (branch crew/<name>) of the cwd repo; kill removes it if clean")
 	cmd.Flags().BoolVar(&attach, "attach", false, "attach to the session after spawning")
+	cmd.Flags().BoolVar(&noAdopt, "no-adopt", false, "don't register this tmux session for inbox push delivery")
 	return cmd
+}
+
+// autoAdopt makes push delivery implicit: spawning from inside a tmux
+// session registers it as the inbox delivery target, so the orchestrator
+// never has to remember `crew adopt`. Agents skip it - the daemon pushes
+// to agent parents via the registry already. Best-effort.
+func autoAdopt(c *client.Client, disabled bool) (string, bool) {
+	if disabled || os.Getenv("TMUX") == "" || os.Getenv("CREW_AGENT_NAME") != "" {
+		return "", false
+	}
+	out, err := exec.Command("tmux", "display-message", "-p", "#S").Output()
+	if err != nil {
+		return "", false
+	}
+	session := strings.TrimSpace(string(out))
+	if err := c.Adopt(identity(), session); err != nil {
+		return "", false
+	}
+	return session, true
 }

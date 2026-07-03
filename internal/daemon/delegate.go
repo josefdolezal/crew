@@ -108,6 +108,14 @@ func (s *Server) deliver(m proto.Message) (int64, error) {
 }
 
 func (s *Server) pushToAdopted(m proto.Message) {
+	// A recipient that is itself an agent (nested orchestration) gets the
+	// notification injected into its session directly - no adoption needed.
+	if agent, err := s.store.Get(m.Recipient); err == nil {
+		if err := s.backend.SendInput(agent.Session, notificationLine(m)); err != nil {
+			log.Printf("push to agent %s: %v", m.Recipient, err)
+		}
+		return
+	}
 	session, err := s.store.Delivery(m.Recipient)
 	if err != nil {
 		return
