@@ -6,6 +6,11 @@ builds:
   - id: crew
     main: ./cmd/crew
     binary: crew
+    ldflags: >-
+      -s -w
+      -X github.com/josefdolezal/crew/internal/version.Version={{ .Version }}
+      -X github.com/josefdolezal/crew/internal/version.Commit={{ .ShortCommit }}
+      -X github.com/josefdolezal/crew/internal/version.Date={{ .Date }}
     env:
       - CGO_ENABLED=0
     goos:
@@ -14,13 +19,14 @@ builds:
     goarch:
       - amd64
       - arm64
-    ldflags:
-      - -s -w -X github.com/josefdolezal/crew/internal/version.Version={{ .Version }}
+    flags:
+      - -trimpath
 
 archives:
   - id: crew
     ids:
       - crew
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     formats:
       - tar.gz
     files:

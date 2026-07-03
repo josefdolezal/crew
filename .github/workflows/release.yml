@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to (re)release (e.g. v0.1.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,6 +23,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Re-releases run against the tag's tree, but with the current
+      # GoReleaser config in case the config itself needed the fix.
+      - name: Stash GoReleaser config
+        run: cp .goreleaser.yaml /tmp/.goreleaser.yaml
+
+      - name: Checkout release tag
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: git checkout ${{ inputs.tag }}
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -27,6 +42,6 @@ jobs:
         with:
           distribution: goreleaser
           version: "~> v2"
-          args: release --clean
+          args: release --clean --config /tmp/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -24,7 +24,7 @@ func Root() *cobra.Command {
 		Long:          "crew lets an orchestrator (human or LLM) delegate work to interactive agent\nsessions running in tmux. Sessions survive daemon restarts and are always\nattachable with `crew attach <name>`.",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Version:       version.Version,
+		Version:       version.Full(),
 	}
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "machine-readable JSON output")
 	root.AddCommand(
