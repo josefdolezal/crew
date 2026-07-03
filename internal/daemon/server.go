@@ -96,6 +96,8 @@ func (s *Server) Run() error {
 	mux.HandleFunc("POST /report", s.handleReport)
 	mux.HandleFunc("POST /route", s.handleRoute)
 	mux.HandleFunc("GET /inbox", s.handleInbox)
+	mux.HandleFunc("POST /adopt", s.handleAdopt)
+	mux.HandleFunc("DELETE /adopt", s.handleUnadopt)
 	mux.HandleFunc("POST /shutdown", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "shutting down"})
 		go func() {

@@ -117,6 +117,13 @@ type WaitResult struct {
 	Elapsed float64     `json:"elapsed_seconds"`
 }
 
+// AdoptRequest registers a tmux session as the live delivery target for
+// an orchestrator identity: inbox arrivals get injected into it.
+type AdoptRequest struct {
+	Identity string `json:"identity"`
+	Session  string `json:"session"`
+}
+
 // ErrorResponse is the daemon's error envelope.
 type ErrorResponse struct {
 	Error string `json:"error"`

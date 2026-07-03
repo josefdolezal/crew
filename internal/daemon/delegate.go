@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/josefdolezal/crew/internal/proto"
@@ -43,7 +44,7 @@ func (s *Server) handleReport(w http.ResponseWriter, r *http.Request) {
 		Body:      req.Message,
 		CreatedAt: time.Now(),
 	}
-	id, err := s.store.InsertMessage(msg)
+	id, err := s.deliver(msg)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, err)
 		return
@@ -78,7 +79,7 @@ func (s *Server) handleRoute(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"delivery": "stdin", "recipient": agent.Name})
 		return
 	}
-	id, err := s.store.InsertMessage(proto.Message{
+	id, err := s.deliver(proto.Message{
 		Sender:    req.From,
 		Recipient: recipient,
 		Kind:      "message",
@@ -90,6 +91,87 @@ func (s *Server) handleRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"delivery": "inbox", "recipient": recipient, "id": id})
+}
+
+// deliver stores an inbox message and, when the recipient has adopted a
+// session (`crew adopt`), injects a one-line notification into it -
+// calypso-style push instead of waiting to be polled. The inbox row stays
+// the source of truth either way.
+func (s *Server) deliver(m proto.Message) (int64, error) {
+	id, err := s.store.InsertMessage(m)
+	if err != nil {
+		return 0, err
+	}
+	m.ID = id
+	s.pushToAdopted(m)
+	return id, nil
+}
+
+func (s *Server) pushToAdopted(m proto.Message) {
+	session, err := s.store.Delivery(m.Recipient)
+	if err != nil {
+		return
+	}
+	if st, err := s.backend.State(session); err != nil || !st.Exists {
+		log.Printf("adopt: session %s for %s is gone, deregistering", session, m.Recipient)
+		_ = s.store.DeleteDelivery(m.Recipient)
+		return
+	}
+	if err := s.backend.SendInput(session, notificationLine(m)); err != nil {
+		log.Printf("adopt: deliver to %s (%s): %v", m.Recipient, session, err)
+	}
+}
+
+// notificationLine renders an inbox message as a single injectable line.
+// Long bodies are truncated - the full content is in the inbox.
+func notificationLine(m proto.Message) string {
+	body := strings.Join(strings.Fields(m.Body), " ")
+	if len(body) > 300 {
+		body = body[:300] + "… (crew inbox for full text)"
+	}
+	switch m.Kind {
+	case "report":
+		return fmt.Sprintf("[crew] %s reported %s: %s", m.Sender, m.Status, body)
+	case "event":
+		return "[crew] " + body
+	default:
+		return fmt.Sprintf("[crew] message from %s: %s", m.Sender, body)
+	}
+}
+
+func (s *Server) handleAdopt(w http.ResponseWriter, r *http.Request) {
+	var req proto.AdoptRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErr(w, http.StatusBadRequest, fmt.Errorf("decode request: %w", err))
+		return
+	}
+	if req.Identity == "" || req.Session == "" {
+		writeErr(w, http.StatusBadRequest, fmt.Errorf("identity and session are required"))
+		return
+	}
+	if st, err := s.backend.State(req.Session); err != nil || !st.Exists {
+		writeErr(w, http.StatusBadRequest, fmt.Errorf("tmux session %q not found", req.Session))
+		return
+	}
+	if err := s.store.SetDelivery(req.Identity, req.Session); err != nil {
+		writeErr(w, http.StatusInternalServerError, err)
+		return
+	}
+	log.Printf("adopted session %s for %s", req.Session, req.Identity)
+	writeJSON(w, http.StatusOK, map[string]string{"identity": req.Identity, "session": req.Session})
+}
+
+func (s *Server) handleUnadopt(w http.ResponseWriter, r *http.Request) {
+	identity := r.URL.Query().Get("identity")
+	if identity == "" {
+		writeErr(w, http.StatusBadRequest, fmt.Errorf("identity query parameter is required"))
+		return
+	}
+	if err := s.store.DeleteDelivery(identity); err != nil {
+		writeErr(w, http.StatusInternalServerError, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"identity": identity, "status": "unadopted"})
 }
 
 func (s *Server) injectToAgent(agent proto.Agent, from, text string) error {

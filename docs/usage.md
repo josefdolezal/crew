@@ -58,6 +58,17 @@ crew inbox --all                      # include already-read
 
 Messages to agents land on their stdin as if typed. Messages to non-agent identities (your orchestrator) land in an inbox. A watchdog also posts inbox events when an agent's process dies or hits a permission prompt.
 
+## Push delivery: crew adopt
+
+By default the inbox is pull-only (`crew wait` / `crew inbox`). If your orchestrator session runs inside tmux, make it push:
+
+```bash
+crew adopt        # run inside the orchestrator's tmux session
+crew adopt --off  # stop
+```
+
+From then on every inbox arrival for your identity - reports, agent messages, exit and attention events - is also injected into that session as a `[crew] ...` line the moment it happens, exactly like agents receive messages. An LLM orchestrator sees it as user input and reacts immediately; no blocked `wait`, no polling. The inbox stays the source of truth (injected lines are truncated at 300 chars); if the adopted session disappears, delivery deregisters itself automatically.
+
 ## Identity
 
 Every spawn records who spawned it; `list`, `inbox`, and report routing are scoped by that identity:

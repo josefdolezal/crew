@@ -212,7 +212,7 @@ func (s *Server) checkAttention(a proto.Agent, lastAttention map[string]bool) {
 }
 
 func (s *Server) postEvent(recipient, body string) {
-	_, err := s.store.InsertMessage(proto.Message{
+	_, err := s.deliver(proto.Message{
 		Sender:    "system",
 		Recipient: recipient,
 		Kind:      "event",

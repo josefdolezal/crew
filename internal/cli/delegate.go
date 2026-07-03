@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -110,6 +111,46 @@ func reportCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("status")
 	_ = cmd.MarkFlagRequired("message")
 	cmd.Flags().StringVar(&as, "as", "", "override reporter identity (testing)")
+	return cmd
+}
+
+func adoptCmd() *cobra.Command {
+	var off bool
+	cmd := &cobra.Command{
+		Use:   "adopt",
+		Short: "Deliver your inbox into this tmux session as it arrives (calypso-style push)",
+		Long:  "Run inside a tmux session to register it as your identity's delivery target:\nreports, agent messages, and events are injected as [crew] lines the moment\nthey arrive - no polling, no blocked wait. The inbox remains the source of\ntruth; long bodies are truncated in the injected line.",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			c, _, err := connect()
+			if err != nil {
+				return fail(err)
+			}
+			id := identity()
+			if off {
+				if err := c.Unadopt(id); err != nil {
+					return fail(err)
+				}
+				return okMsg("stopped delivering to this session", map[string]string{"identity": id, "status": "unadopted"})
+			}
+			if os.Getenv("TMUX") == "" {
+				return fail(fmt.Errorf("adopt requires running inside tmux (fallback: poll with crew wait / crew inbox)"))
+			}
+			out, err := exec.Command("tmux", "display-message", "-p", "#S").Output()
+			if err != nil {
+				return fail(fmt.Errorf("detect tmux session: %w", err))
+			}
+			session := strings.TrimSpace(string(out))
+			if err := c.Adopt(id, session); err != nil {
+				return fail(err)
+			}
+			return okMsg(
+				fmt.Sprintf("inbox for %s now delivers into tmux session %q (undo: crew adopt --off)", id, session),
+				map[string]string{"identity": id, "session": session},
+			)
+		},
+	}
+	cmd.Flags().BoolVar(&off, "off", false, "deregister this identity's delivery session")
 	return cmd
 }
 

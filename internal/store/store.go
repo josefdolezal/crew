@@ -44,6 +44,11 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 CREATE INDEX IF NOT EXISTS idx_messages_recipient ON messages(recipient, read_at);
 CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender, kind);
+CREATE TABLE IF NOT EXISTS deliveries (
+	identity   TEXT PRIMARY KEY,
+	session    TEXT NOT NULL,
+	created_at INTEGER NOT NULL
+);
 `
 
 func Open(path string) (*Store, error) {

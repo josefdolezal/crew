@@ -157,6 +157,14 @@ func (c *Client) Inbox(recipient string, all, drain bool) ([]proto.Message, erro
 	return msgs, err
 }
 
+func (c *Client) Adopt(identity, session string) error {
+	return c.do("POST", "/adopt", proto.AdoptRequest{Identity: identity, Session: session}, nil)
+}
+
+func (c *Client) Unadopt(identity string) error {
+	return c.do("DELETE", "/adopt?identity="+url.QueryEscape(identity), nil, nil)
+}
+
 // Wait long-polls the daemon until the agent reports, exits, idles, or
 // the timeout passes. It bypasses the client's default 30s HTTP timeout.
 func (c *Client) Wait(name, waitFor string, timeout time.Duration) (proto.WaitResult, error) {

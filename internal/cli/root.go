@@ -29,7 +29,7 @@ func Root() *cobra.Command {
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "machine-readable JSON output")
 	root.AddCommand(
 		spawnCmd(), listCmd(), killCmd(), attachCmd(), peekCmd(), sendCmd(),
-		waitCmd(), reportCmd(), inboxCmd(), logsCmd(), daemonCmd(),
+		waitCmd(), reportCmd(), inboxCmd(), adoptCmd(), logsCmd(), daemonCmd(),
 	)
 	return root
 }

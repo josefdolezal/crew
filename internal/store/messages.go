@@ -83,6 +83,32 @@ func (s *Store) MarkRead(id int64) error {
 	return err
 }
 
+// SetDelivery registers a tmux session as the live delivery target for an
+// identity (crew adopt): inbox arrivals get injected into it.
+func (s *Store) SetDelivery(identity, session string) error {
+	_, err := s.db.Exec(
+		`INSERT INTO deliveries (identity, session, created_at) VALUES (?, ?, ?)
+		 ON CONFLICT(identity) DO UPDATE SET session = excluded.session, created_at = excluded.created_at`,
+		identity, session, time.Now().Unix(),
+	)
+	return err
+}
+
+// Delivery returns the registered session for an identity, or ErrNotFound.
+func (s *Store) Delivery(identity string) (string, error) {
+	var session string
+	err := s.db.QueryRow(`SELECT session FROM deliveries WHERE identity = ?`, identity).Scan(&session)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", ErrNotFound
+	}
+	return session, err
+}
+
+func (s *Store) DeleteDelivery(identity string) error {
+	_, err := s.db.Exec(`DELETE FROM deliveries WHERE identity = ?`, identity)
+	return err
+}
+
 // DeleteMessagesFrom removes an agent's outgoing reports so a re-spawned
 // agent with the same name doesn't inherit a stale "done".
 func (s *Store) DeleteMessagesFrom(sender string) error {
