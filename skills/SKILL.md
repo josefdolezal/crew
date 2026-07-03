@@ -28,6 +28,7 @@ crew turns you into an orchestrator: spawn interactive agent sessions, hand them
 | Read your messages | `crew inbox --drain --json` |
 | List your agents | `crew list --json` (`--all` for everyone's) |
 | Full output history | `crew logs <name> -n 200` |
+| Installed version | `crew --version` |
 | Terminate | `crew kill <name>` |
 
 ## Command details

@@ -80,6 +80,7 @@ crew list [--all] [--json]     # NAME RUNTIME MODEL STATUS AGE CWD PARENT
 crew peek <name>               # rendered screen (what a human would see)
 crew logs <name> -n 200        # raw output log, ANSI-stripped (--raw to keep escapes)
 crew attach <name>             # full tmux attach; detach with ctrl-b d
+crew --version                 # installed crew version
 ```
 
 `status` is computed live from tmux: `running`, `exited` (process ended, screen still inspectable), or `gone` (session vanished).

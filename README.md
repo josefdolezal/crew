@@ -42,6 +42,7 @@ crew kill helper
 | `crew send <name> <text>` | Inject a follow-up (or `--key Enter` to answer a dialog) |
 | `crew inbox --drain` | Reports, agent messages, and exit events addressed to you |
 | `crew list` / `peek` / `logs` / `attach` / `kill` | Observe and manage the fleet |
+| `crew --version` | Print the installed crew version |
 
 Every command takes `--json` for machine consumption - the CLI is designed to be driven by an LLM as much as by a human.
 

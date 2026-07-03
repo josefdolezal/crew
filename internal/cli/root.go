@@ -12,6 +12,7 @@ import (
 
 	"github.com/josefdolezal/crew/internal/client"
 	"github.com/josefdolezal/crew/internal/config"
+	"github.com/josefdolezal/crew/internal/version"
 )
 
 var jsonOut bool
@@ -23,6 +24,7 @@ func Root() *cobra.Command {
 		Long:          "crew lets an orchestrator (human or LLM) delegate work to interactive agent\nsessions running in tmux. Sessions survive daemon restarts and are always\nattachable with `crew attach <name>`.",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Version:       version.Version,
 	}
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "machine-readable JSON output")
 	root.AddCommand(
