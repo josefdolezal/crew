@@ -25,9 +25,13 @@ func (Codex) Command(spec Spec) string {
 	return strings.Join(parts, " ")
 }
 
-// Codex TUI patterns are not pinned down; report Booting/uncertain and
-// let the daemon's activity-quiescence fallback decide readiness.
 func (Codex) Startup(screen string) StartupState {
+	// Directory-trust onboarding: Enter selects "Yes, continue". The
+	// hooks-review dialog is NOT auto-confirmed (Enter would pick
+	// "Review hooks"); it surfaces via Attention instead.
+	if strings.Contains(screen, "Do you trust the contents of this directory") {
+		return StartupDialog
+	}
 	if strings.Contains(screen, "Esc to interrupt") || (strings.Contains(screen, "send") && strings.Contains(screen, "⏎")) {
 		return StartupReady
 	}
@@ -38,5 +42,12 @@ func (Codex) LooksIdle(screen string) bool {
 	return !strings.Contains(screen, "Esc to interrupt")
 }
 
-// Codex approval-prompt patterns are not pinned down yet.
-func (Codex) Attention(screen string) string { return "" }
+// Attention catches codex confirmation dialogs (hooks review, approval
+// prompts): a selected numbered option rendered as "› 1." plus an
+// enter-to-confirm footer.
+func (Codex) Attention(screen string) string {
+	if strings.Contains(screen, "› 1.") && strings.Contains(screen, "Press enter") {
+		return "confirmation dialog"
+	}
+	return ""
+}

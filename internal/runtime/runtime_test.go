@@ -63,6 +63,24 @@ func TestClaudeStartup(t *testing.T) {
 	}
 }
 
+func TestCodexScreens(t *testing.T) {
+	c := Codex{}
+	trust := "Do you trust the contents of this directory? Working with untrusted contents\n› 1. Yes, continue\n  2. No, quit\n\n  Press enter to continue"
+	if got := c.Startup(trust); got != StartupDialog {
+		t.Errorf("directory trust: got %v, want StartupDialog", got)
+	}
+	hooks := "Hooks need review\n› 1. Review hooks\n  2. Trust all and continue\n\n  Press enter to confirm or esc to go back"
+	if got := c.Startup(hooks); got == StartupDialog {
+		t.Error("hooks dialog must not be auto-confirmed as a startup dialog")
+	}
+	if got := c.Attention(hooks); got == "" {
+		t.Error("hooks dialog should need attention")
+	}
+	if got := c.Attention("› Implement {feature}\n  gpt-5.5 high · Context 7% used"); got != "" {
+		t.Errorf("idle composer should not need attention, got %q", got)
+	}
+}
+
 func TestClaudeAttention(t *testing.T) {
 	c := Claude{}
 	perm := "Bash command\n  rm -rf build\n  Do you want to proceed?\n❯ 1. Yes\n  2. No"
