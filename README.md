@@ -53,7 +53,7 @@ Every command takes `--json` for machine consumption - the CLI is designed to be
 - [Usage guide](docs/usage.md) - all commands, flags, the delegation protocol, worktrees, identities.
 - [Architecture](docs/architecture.md) - the daemon, session backends, and the design decisions behind them.
 - [Releases](docs/releases.md) - how releases are cut, verified, and re-run.
-- [Agent skill](skills/SKILL.md) - drop-in skill file teaching an LLM orchestrator to drive crew.
+- [Agent skill](skills/crew/SKILL.md) - drop-in skill teaching an LLM orchestrator to drive crew.
 
 ## Status
 
