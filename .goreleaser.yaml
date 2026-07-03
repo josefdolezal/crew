@@ -40,7 +40,7 @@ checksum:
 brews:
   - repository:
       owner: josefdolezal
-      name: homebrew-tap
+      name: homebrew-formulae
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Formula
     commit_author:

@@ -13,12 +13,12 @@ The script refuses to run unless you are on `main` with a clean working tree, an
 1. builds `crew` for darwin/linux, amd64 + arm64 (`CGO_ENABLED=0`, `-trimpath`),
 2. stamps the binary via ldflags (`crew --version` reports `0.2.0 (<commit>, <date>)`),
 3. publishes a GitHub Release with `crew_<version>_<os>_<arch>.tar.gz` archives (each bundling README, LICENSE, docs) and a `checksums.txt`,
-4. pushes an updated formula to [josefdolezal/homebrew-tap](https://github.com/josefdolezal/homebrew-tap) so `brew install josefdolezal/tap/crew` serves the new version (skipped for prereleases).
+4. pushes an updated formula to [josefdolezal/homebrew-formulae](https://github.com/josefdolezal/homebrew-formulae) so `brew install josefdolezal/formulae/crew` serves the new version (skipped for prereleases).
 
-### Homebrew tap prerequisites (one-time)
+### Homebrew tap prerequisites (one-time, already set up)
 
-- A public `josefdolezal/homebrew-tap` repository (formulae live under `Formula/`; GoReleaser creates the file).
-- A `HOMEBREW_TAP_TOKEN` Actions secret on this repo: a token with write access to the tap (a fine-grained PAT scoped to `homebrew-tap` with Contents read/write is enough). The default `GITHUB_TOKEN` cannot push to other repositories.
+- The public `josefdolezal/homebrew-formulae` tap (formulae live under `Formula/`; GoReleaser creates `Formula/crew.rb`).
+- A `HOMEBREW_TAP_TOKEN` Actions secret on this repo: a token with write access to the tap. The default `GITHUB_TOKEN` cannot push to other repositories.
 
 ## Verifying
 
