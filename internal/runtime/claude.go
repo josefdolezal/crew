@@ -1,6 +1,10 @@
 package runtime
 
-import "strings"
+import (
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 // Claude launches Claude Code interactively. The task is passed as the
 // positional prompt argument, which starts the interactive REPL with the
@@ -11,6 +15,15 @@ func (Claude) Name() string        { return "claude" }
 func (Claude) SignInbound() bool   { return true }
 func (Claude) WantsPreamble() bool { return true }
 func (Claude) TaskAsArg() bool     { return true }
+
+func (Claude) PreTrust(dir string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	_, err = trustClaudeConfig(filepath.Join(home, ".claude.json"), trustTarget(dir))
+	return err
+}
 
 func (Claude) Command(spec Spec) string {
 	parts := []string{"claude"}

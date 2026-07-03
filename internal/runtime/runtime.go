@@ -54,6 +54,10 @@ type Runtime interface {
 	// returns early with outcome "attention" and the watchdog posts an
 	// inbox event. Return "" when unsure.
 	Attention(screen string) string
+	// PreTrust persists trust for dir in the runtime's own config before
+	// launch, so its folder-trust dialog never appears. Best-effort: on
+	// error the startup watcher still auto-confirms dialogs on screen.
+	PreTrust(dir string) error
 }
 
 func Lookup(name string) (Runtime, error) {

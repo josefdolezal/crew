@@ -1,6 +1,10 @@
 package runtime
 
-import "strings"
+import (
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 // Codex launches OpenAI Codex CLI interactively, task as the positional
 // prompt argument.
@@ -10,6 +14,15 @@ func (Codex) Name() string        { return "codex" }
 func (Codex) SignInbound() bool   { return true }
 func (Codex) WantsPreamble() bool { return true }
 func (Codex) TaskAsArg() bool     { return true }
+
+func (Codex) PreTrust(dir string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	_, err = trustCodexConfig(filepath.Join(home, ".codex", "config.toml"), trustTarget(dir))
+	return err
+}
 
 func (Codex) Command(spec Spec) string {
 	parts := []string{"codex"}

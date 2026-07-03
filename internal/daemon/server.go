@@ -143,6 +143,12 @@ func (s *Server) handleSpawn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Trust {
+		if err := rt.PreTrust(req.Cwd); err != nil {
+			log.Printf("pre-trust %s for %s: %v (startup watcher will handle dialogs)", req.Cwd, req.Name, err)
+		}
+	}
+
 	task := req.Task
 	if task != "" && rt.WantsPreamble() {
 		task = runtime.WithPreamble(req.Name, task)

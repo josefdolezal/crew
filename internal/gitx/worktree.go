@@ -17,6 +17,12 @@ func git(dir string, args ...string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+// Toplevel returns the working-tree root containing dir, or an error if
+// dir is not inside a git repository.
+func Toplevel(dir string) (string, error) {
+	return git(dir, "rev-parse", "--show-toplevel")
+}
+
 // AddWorktree creates a worktree at path with a new branch, based on the
 // repository containing repoDir.
 func AddWorktree(repoDir, path, branch string) error {

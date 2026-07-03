@@ -24,6 +24,7 @@ func (Bash) Startup(screen string) StartupState {
 
 func (Bash) LooksIdle(screen string) bool   { return promptVisible(screen) }
 func (Bash) Attention(screen string) string { return "" }
+func (Bash) PreTrust(dir string) error      { return nil }
 
 func promptVisible(screen string) bool {
 	trimmed := strings.TrimRight(screen, " \n\t")

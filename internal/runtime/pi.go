@@ -27,3 +27,4 @@ func (Pi) Command(spec Spec) string {
 func (Pi) Startup(screen string) StartupState { return StartupBooting }
 func (Pi) LooksIdle(screen string) bool       { return true }
 func (Pi) Attention(screen string) string     { return "" }
+func (Pi) PreTrust(dir string) error          { return nil }

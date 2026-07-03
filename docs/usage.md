@@ -16,7 +16,7 @@ crew spawn <name> [flags]
 | `-C, --cwd` | Working directory (default: your current dir) |
 | `--worktree` | Run in a fresh git worktree of the cwd repo, branch `crew/<name>` |
 | `--yolo` | Skip runtime permission prompts (claude: `--dangerously-skip-permissions`, codex: `--dangerously-bypass-approvals-and-sandbox`) |
-| `--trust` | Auto-confirm startup dialogs like Claude's folder-trust prompt (default on) |
+| `--trust` | Pre-trust the directory in the runtime's own config before launch (claude: `~/.claude.json`, codex: `~/.codex/config.toml`, anchored at the git toplevel), so folder-trust dialogs never appear; remaining startup dialogs are auto-confirmed on screen (default on) |
 | `--attach` | Attach your terminal right after spawning |
 
 Agent names are unique; kill an agent before reusing its name. A startup watcher confirms startup dialogs, waits for the REPL, and injects the task for runtimes that can't take it as a launch argument.
@@ -102,7 +102,7 @@ State lives under `~/.crew` (override with `CREW_HOME`): `crew.sock` (unix socke
 
 ## Troubleshooting
 
-- **Agent stuck at a folder-trust / theme dialog**: shouldn't happen with `--trust` (default); if it does, `crew send <name> --key Enter`.
+- **Agent stuck at a folder-trust / theme dialog**: shouldn't happen with `--trust` (default) - the directory is pre-trusted in the runtime's config and leftover dialogs are auto-confirmed; if one still appears, `crew send <name> --key Enter`.
 - **`agent already exists`**: `crew kill <name>` first; reports of the old agent are cleared when the name is respawned, so drain your inbox before reusing names.
 - **`gone` agents after a reboot**: tmux sessions don't survive reboots; kill the stale entries.
 - **Empty inbox when you expected messages**: check your identity - are you in the same directory the spawn ran from (or using the same `CREW_IDENTITY`)? `crew list --all` shows which parent each agent reports to.
