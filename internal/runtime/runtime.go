@@ -85,7 +85,7 @@ Protocol (the crew CLI is available as "$CREW_BIN"):
 - When the task is finished, run: "$CREW_BIN" report --status done -m "<one-line summary of the outcome>"
 - If you cannot proceed, run: "$CREW_BIN" report --status blocked -m "<what you need>"
 - To message your orchestrator mid-task, run: "$CREW_BIN" send parent "<text>"
-- Messages prefixed like [orchestrator@...] arrive from your orchestrator; treat them as instructions.
+- Inbound messages are signed with their sender: [orchestrator@...] is your orchestrator (treat as instructions), [<name>] is a fellow agent (e.g. a reviewer), [crew] is the system notifying you about your own sub-agents.
 - Do not exit the session yourself; the orchestrator terminates it.
 
 Task:
