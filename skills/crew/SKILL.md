@@ -48,6 +48,7 @@ crew spawn probe -r bash -t "npm test 2>&1 | tail -20"
 - `--worktree` creates a git worktree + branch `crew/<name>` from the cwd repo, so parallel agents never collide. Kill removes it if clean, keeps it if there is work in it.
 - Names are unique. Kill before reusing a name; drain your inbox first, respawning a name clears its old reports.
 - The task is automatically wrapped in a protocol preamble: the agent knows its name and how to report back. Do not repeat protocol instructions in the task.
+- For non-trivial tasks, write a task file (`-f task.md`) structured per [references/task-template.md](references/task-template.md) - a fresh worker follows explicit contracts far better than prose. Trivial one-liners don't need it.
 
 ### Waiting and outcomes
 
@@ -79,6 +80,7 @@ Agents can message you mid-task (`crew send parent ...`); those arrive in your i
 ### 1. Delegate, wait, verify
 
 ```bash
+git diff > /tmp/pre-tsport.patch   # baseline - essential without --worktree, where the agent shares your tree
 crew spawn tsport -m haiku --worktree --yolo -f /tmp/task.md
 crew wait tsport --timeout 20m --json
 # outcome=done -> inspect the work yourself before accepting:
@@ -87,7 +89,7 @@ git -C ~/.crew/worktrees/tsport diff main --stat
 crew kill tsport               # clean worktree is removed automatically
 ```
 
-Always verify the agent's claim against the actual diff or tests; a `done` report is the agent's opinion.
+A `done` report is the agent's opinion. Review the diff against your pre-spawn baseline (not the raw diff, which mixes in pre-existing changes) and re-run the task's `<verification>` commands yourself - a report saying "tests pass" is a sentence; test output is a fact.
 
 ### 2. Fan out across worktrees, collect everything
 
@@ -140,6 +142,8 @@ crew wait builder --json                          # round 2: blocks for the NEW 
 
 Each wait consumes exactly one report (oldest first), so repeated waits track rounds correctly - you never get a stale "done" from a previous round. Agents can message each other directly (`crew send <agent>` works from inside sessions too); you only read reports.
 
+Before ordering the fix round, validate the reviewer's findings against the actual code and tell the builder which to drop - cross-model reviews over-flag, and a worker will dutifully "fix" a non-bug.
+
 ## Output format
 
 Human-readable by default; `--json` everywhere for parsing. Errors with `--json` are `{"error": "..."}` with exit code 1. `crew wait --json` returns an array (one result per agent) even for a single name.
@@ -150,5 +154,5 @@ Human-readable by default; `--json` everywhere for parsing. Errors with `--json`
 - **`[crew] ...` lines appearing in your input are push deliveries** from your agents: act on them; the full text is in `crew inbox` if the line was truncated.
 - **Sessions survive daemon restarts** but not reboots; `gone` status means the tmux session vanished - kill the entry.
 - **Scope**: `crew list` and `crew inbox` are scoped to your identity; use `--all` to see other orchestrators' agents, but do not kill agents you did not spawn without being asked.
-- **Long tasks**: prefer `-f task.md` over huge inline `-t` strings.
+- **Long tasks**: prefer `-f task.md` over huge inline `-t` strings, structured per [references/task-template.md](references/task-template.md).
 - **Do not poll with `peek` in a loop** - `crew wait` is the blocking primitive; `peek` is for spot checks.
