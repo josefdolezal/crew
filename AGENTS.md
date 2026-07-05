@@ -30,6 +30,10 @@ go build -o /tmp/crew-dev/crew ./cmd/crew
 
 Use `-r bash` for lifecycle/plumbing verification; only spawn `-r claude -m haiku` when the change touches LLM-specific behavior (preamble, attention, idle detection) - it costs tokens.
 
+## Release
+
+Once a task is done and committed to main, cut a release: `scripts/release.sh X.Y.Z`. It re-runs the checks, tags, and pushes; CI builds the binaries and publishes the GitHub Release + Homebrew formula. Patch bump for fixes/docs/skill changes, minor for new commands or behavior changes. Confirm the workflow succeeded (`gh run watch`) or verify with `scripts/verify-release.sh X.Y.Z`.
+
 ## Conventions
 
 - Pure Go, no CGo (modernc.org/sqlite). Don't add dependencies without stating why in the PR/commit.
