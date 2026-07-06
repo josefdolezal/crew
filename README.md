@@ -27,7 +27,7 @@ brew install josefdolezal/formulae/crew
 
 Alternatively, with Go 1.24+: `go install github.com/josefdolezal/crew/cmd/crew@latest` (tmux 3.2+ required separately), or grab a prebuilt binary for macOS/Linux (amd64/arm64) from [Releases](https://github.com/josefdolezal/crew/releases).
 
-If your orchestrator is an LLM (Claude Code, Codex, ...), also install the [crew skill](skills/crew/SKILL.md) so it knows how to drive the CLI:
+If your orchestrator is an LLM (Claude Code, Codex, ...), also install the [crew skill](skills/crew/SKILL.md) so it knows how to drive the CLI (the same command installs the [second-opinion](skills/second-opinion/SKILL.md) and [llm-council](skills/llm-council/SKILL.md) workflow skills built on top):
 
 ```bash
 npx skills add josefdolezal/crew
@@ -60,6 +60,8 @@ Every command takes `--json` for machine consumption - the CLI is designed to be
 - [Architecture](docs/architecture.md) - the daemon, session backends, and the design decisions behind them.
 - [Releases](docs/releases.md) - how releases are cut, verified, and re-run.
 - [Agent skill](skills/crew/SKILL.md) - drop-in skill teaching an LLM orchestrator to drive crew.
+- [second-opinion](skills/second-opinion/SKILL.md) - one cross-lineage consultant reviews a plan, diff, or diagnosis; findings validated before they reach you.
+- [llm-council](skills/llm-council/SKILL.md) - Karpathy-style council: independent answers, anonymized peer review, chairman synthesis.
 
 ## Status
 
