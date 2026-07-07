@@ -118,7 +118,7 @@ func adoptCmd() *cobra.Command {
 	var off bool
 	cmd := &cobra.Command{
 		Use:   "adopt",
-		Short: "Deliver your inbox into this tmux session as it arrives (calypso-style push)",
+		Short: "Deliver your inbox into this tmux session as it arrives (push, not poll)",
 		Long:  "Run inside a tmux session to register it as your identity's delivery target:\nreports, agent messages, and events are injected as [crew] lines the moment\nthey arrive - no polling, no blocked wait. The inbox remains the source of\ntruth; long bodies are truncated in the injected line.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
