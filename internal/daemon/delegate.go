@@ -95,8 +95,8 @@ func (s *Server) handleRoute(w http.ResponseWriter, r *http.Request) {
 
 // deliver stores an inbox message and, when the recipient has adopted a
 // session (`crew adopt`), injects a one-line notification into it -
-// calypso-style push instead of waiting to be polled. The inbox row stays
-// the source of truth either way.
+// push instead of waiting to be polled. The inbox row stays the source
+// of truth either way.
 func (s *Server) deliver(m proto.Message) (int64, error) {
 	id, err := s.store.InsertMessage(m)
 	if err != nil {
