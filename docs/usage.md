@@ -93,7 +93,9 @@ crew attach <name>             # full tmux attach; detach with ctrl-b d
 crew --version                 # installed crew version
 ```
 
-`status` is computed live from tmux: `running`, `exited` (process ended, screen still inspectable), or `gone` (session vanished).
+Agents are windows of one `crew` tmux session, so `tmux attach -t crew` shows the whole fleet in the window list; `crew attach <name>` lands on that agent's window. Because attached clients share the session's current window, switching agents switches it for everyone attached.
+
+`status` is computed live from tmux: `running`, `exited` (process ended, screen still inspectable), or `gone` (window vanished).
 
 ## The daemon
 

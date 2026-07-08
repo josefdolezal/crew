@@ -13,7 +13,7 @@ A single Go binary. `crew daemon run` serves; every other subcommand is a thin c
 
 ## Design decisions
 
-**Sessions live in tmux, not in the daemon.** The daemon could own PTYs directly, but then a daemon crash would kill every agent. Instead sessions are independent tmux sessions; the daemon coordinates (registry, routing, waiting, watching) and re-adopts running sessions from SQLite after a restart. Killing the daemon is always safe.
+**Sessions live in tmux, not in the daemon.** The daemon could own PTYs directly, but then a daemon crash would kill every agent. Instead agents run as windows of a single `crew` tmux session (identifier `crew:<name>`), so anyone attached sees the whole fleet in the window list; the daemon coordinates (registry, routing, waiting, watching) and re-adopts running sessions from SQLite after a restart. Killing the daemon is always safe. Plain session names remain valid backend identifiers - adopted orchestrator sessions and pre-window agents resolve through the same code path.
 
 **Reads are rendered screens, not raw streams.** Agent CLIs are TUIs; their raw output is cursor-movement soup. tmux maintains the virtual screen for us - `crew peek` returns `capture-pane` output, which is what a human would see. Raw streams are still logged per agent (`pipe-pane`) for forensics.
 

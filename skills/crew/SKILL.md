@@ -152,7 +152,7 @@ Human-readable by default; `--json` everywhere for parsing. Errors with `--json`
 
 - **You may not be alone**: the user can `crew attach` and type into the same session. Treat unexpected screen content as possible human intervention, not corruption.
 - **`[crew] ...` lines appearing in your input are push deliveries** from your agents: act on them; the full text is in `crew inbox` if the line was truncated.
-- **Sessions survive daemon restarts** but not reboots; `gone` status means the tmux session vanished - kill the entry.
+- **Sessions survive daemon restarts** but not reboots; `gone` status means the agent's tmux window vanished - kill the entry. Agents run as windows of one `crew` tmux session, so a user attached to it sees every agent come and go.
 - **Scope**: `crew list` and `crew inbox` are scoped to your identity; use `--all` to see other orchestrators' agents, but do not kill agents you did not spawn without being asked.
 - **Long tasks**: prefer `-f task.md` over huge inline `-t` strings, structured per [references/task-template.md](references/task-template.md).
 - **Do not poll with `peek` in a loop** - `crew wait` is the blocking primitive; `peek` is for spot checks.

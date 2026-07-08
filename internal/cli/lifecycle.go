@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -62,7 +63,13 @@ func attachTo(c *client.Client, name string) error {
 		return fail(fmt.Errorf("agent %q session is gone", name))
 	}
 	// M1 supports the tmux backend only, so attach is a plain tmux exec.
-	tmuxArgs := []string{"tmux", "attach-session", "-t", agent.Session}
+	// Agents live as "crew:<name>" windows in one session; select the
+	// window first so the client lands on it. Pre-window agents stored a
+	// plain session name.
+	tmuxArgs := []string{"tmux", "attach-session", "-t", "=" + agent.Session}
+	if sess, window, ok := strings.Cut(agent.Session, ":"); ok {
+		tmuxArgs = []string{"tmux", "select-window", "-t", "=" + sess + ":=" + window, ";", "attach-session", "-t", "=" + sess}
+	}
 	path, err := exec.LookPath(tmuxArgs[0])
 	if err != nil {
 		return fail(err)

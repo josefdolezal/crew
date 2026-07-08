@@ -174,7 +174,7 @@ func (s *Server) handleSpawn(w http.ResponseWriter, r *http.Request) {
 		Parent:    req.Parent,
 		Task:      req.Task,
 		Backend:   s.backend.Name(),
-		Session:   "crew-" + req.Name,
+		Session:   "crew:" + req.Name,
 		Status:    proto.StatusRunning,
 		Worktree:  req.Worktree,
 		CreatedAt: time.Now(),

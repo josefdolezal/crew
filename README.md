@@ -14,7 +14,7 @@ crew wait worker             # blocks until the agent reports done or blocked
 ## Why
 
 - **Any runtime.** Delegate to `claude`, `codex`, `pi`, or `bash` - each a full interactive CLI session, not a headless API call. Mix vendors and models per task (`-m haiku` for grunt work, anything for review).
-- **Real, attachable sessions.** Agents live in tmux. `crew attach` drops you into any session to watch or take over; detach and the agent keeps working.
+- **Real, attachable sessions.** Agents live as windows of one `crew` tmux session - attach it and the whole fleet is in your window list. `crew attach` drops you onto any agent to watch or take over; detach and the agent keeps working.
 - **A delegation loop, not a fire-and-forget.** Spawned agents get a protocol preamble and self-report (`done` / `blocked`) when finished. `crew wait` also detects agents stuck on permission prompts (`attention`) or silently idle, so your orchestrator never hangs on a lost worker.
 - **Parallel by design.** `--worktree` gives each agent its own git worktree and branch; clean worktrees vanish on kill, work-in-progress survives. Orchestrators are scoped per directory - two sessions in two repos never see each other's agents.
 - **Nothing to babysit.** The daemon autostarts on first use and coordinates over a unix socket. Sessions live in tmux and state in SQLite, so a daemon restart never kills an agent.
