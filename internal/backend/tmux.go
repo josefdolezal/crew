@@ -10,10 +10,10 @@ import (
 )
 
 // Tmux implements Backend on top of tmux (>= 3.2, for new-session/new-window -e).
-// Identifiers are either a plain session name or "session:window". Agents use
-// the window form so the whole fleet lives in one tmux session and an attached
-// user sees every agent in the window list; plain names remain valid for
-// adopted orchestrator sessions and pre-window agents.
+// Identifiers are a plain session name, "session:window", or a pane id ("%3").
+// Agents use the window form so the whole fleet lives in one tmux session and
+// an attached user sees every agent in the window list; pane ids identify
+// adopted orchestrator panes; plain names remain valid for pre-window agents.
 type Tmux struct {
 	bin string
 	mu  sync.Mutex // serializes Spawn's has-session check against session creation
@@ -41,6 +41,10 @@ func (t *Tmux) run(args ...string) (string, error) {
 // matching is a correctness hazard: after window "t1" dies, target "crew:t1"
 // would prefix-match a live window "t11".
 func target(id string) string {
+	if strings.HasPrefix(id, "%") {
+		// Pane ids are unique and never prefix-matched.
+		return id
+	}
 	if sess, window, ok := strings.Cut(id, ":"); ok {
 		return "=" + sess + ":=" + window
 	}
@@ -144,7 +148,9 @@ func (t *Tmux) Kill(session string) error {
 	}
 	// Killing the last window kills the session with it.
 	cmd := "kill-session"
-	if strings.Contains(session, ":") {
+	if strings.HasPrefix(session, "%") {
+		cmd = "kill-pane"
+	} else if strings.Contains(session, ":") {
 		cmd = "kill-window"
 	}
 	_, err := t.run(cmd, "-t", target(session))

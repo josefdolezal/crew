@@ -3,9 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -92,8 +90,8 @@ func spawnCmd() *cobra.Command {
 			if wtPath != "" {
 				human += fmt.Sprintf("\nworktree: %s (branch crew/%s)", wtPath, agent.Name)
 			}
-			if session, ok := autoAdopt(c, noAdopt); ok {
-				human += fmt.Sprintf("\ninbox: pushed into this tmux session (%s); disable: crew adopt --off", session)
+			if pane, ok := autoAdopt(c, noAdopt); ok {
+				human += fmt.Sprintf("\ninbox: pushed into this tmux pane (%s); disable: crew adopt --off", pane)
 			}
 			human += fmt.Sprintf("\nattach: crew attach %s", agent.Name)
 			if err := okMsg(human, agent); err != nil {
@@ -118,21 +116,20 @@ func spawnCmd() *cobra.Command {
 	return cmd
 }
 
-// autoAdopt makes push delivery implicit: spawning from inside a tmux
-// session registers it as the inbox delivery target, so the orchestrator
-// never has to remember `crew adopt`. Agents skip it - the daemon pushes
-// to agent parents via the registry already. Best-effort.
+// autoAdopt makes push delivery implicit: spawning from inside tmux
+// registers the invoking pane as the inbox delivery target, so the
+// orchestrator never has to remember `crew adopt`. The pane, not the
+// session: injecting into a session lands on its active window, which is
+// the wrong orchestrator when several run as windows of one session.
+// Agents skip it - the daemon pushes to agent parents via the registry
+// already. Best-effort.
 func autoAdopt(c *client.Client, disabled bool) (string, bool) {
-	if disabled || os.Getenv("TMUX") == "" || os.Getenv("CREW_AGENT_NAME") != "" {
+	pane := os.Getenv("TMUX_PANE")
+	if disabled || pane == "" || os.Getenv("CREW_AGENT_NAME") != "" {
 		return "", false
 	}
-	out, err := exec.Command("tmux", "display-message", "-p", "#S").Output()
-	if err != nil {
+	if err := c.Adopt(identity(), pane); err != nil {
 		return "", false
 	}
-	session := strings.TrimSpace(string(out))
-	if err := c.Adopt(identity(), session); err != nil {
-		return "", false
-	}
-	return session, true
+	return pane, true
 }

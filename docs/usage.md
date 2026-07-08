@@ -60,19 +60,19 @@ Messages to agents land on their stdin as if typed. Messages to non-agent identi
 
 ## Push delivery
 
-When you spawn from inside a tmux session, that session is registered as your inbox's delivery target automatically (opt out per spawn with `--no-adopt`, or `crew adopt --off` to stop). From then on every inbox arrival for your identity - reports, agent messages, exit and attention events - is injected into your session as a `[crew] ...` line the moment it happens, exactly like agents receive messages. An LLM orchestrator sees it as user input and reacts immediately; no blocked `wait`, no polling.
+When you spawn from inside tmux, your pane is registered as your inbox's delivery target automatically (opt out per spawn with `--no-adopt`, or `crew adopt --off` to stop). From then on every inbox arrival for your identity - reports, agent messages, exit and attention events - is injected into your pane as a `[crew] ...` line the moment it happens, exactly like agents receive messages. An LLM orchestrator sees it as user input and reacts immediately; no blocked `wait`, no polling. Delivery is pane-granular, so orchestrators running as separate windows (or split panes) of one tmux session don't receive each other's notifications.
 
 Agents that spawn sub-agents get the same push into their session via the registry - nothing to set up. Orchestrators *not* inside tmux fall back to pull (`crew wait` / `crew inbox`).
 
-`crew adopt` still exists for manual control: run it inside a tmux session to (re)register without spawning, `--off` to deregister. The inbox stays the source of truth (injected lines truncate at 300 chars); if a registered session disappears, delivery deregisters itself automatically.
+`crew adopt` still exists for manual control: run it inside a tmux pane to (re)register without spawning, `--off` to deregister. The inbox stays the source of truth (injected lines truncate at 300 chars); if a registered pane disappears, delivery deregisters itself automatically.
 
 ## Identity
 
 Every spawn records who spawned it; `list`, `inbox`, and report routing are scoped by that identity:
 
 1. `CREW_AGENT_NAME` - set automatically inside agent sessions.
-2. `CREW_IDENTITY` - set it yourself to pin a stable identity for a long-lived orchestrator session (recommended if your session may change cwd).
-3. `orchestrator@<cwd>` - the default: sessions in different directories are distinct orchestrators automatically.
+2. `CREW_IDENTITY` - set it yourself to pin a stable identity for a long-lived orchestrator session (recommended if your session may change cwd, or must survive a tmux restart).
+3. `orchestrator@<cwd>#<pane>` - the default inside tmux: sessions in different directories *or different panes* are distinct orchestrators automatically. Outside tmux the pane part is dropped.
 
 `crew list --all` crosses identity boundaries when you need the full picture.
 
@@ -117,4 +117,4 @@ State lives under `~/.crew` (override with `CREW_HOME`): `crew.sock` (unix socke
 - **Agent stuck at a folder-trust / theme dialog**: shouldn't happen with `--trust` (default) - the directory is pre-trusted in the runtime's config and leftover dialogs are auto-confirmed; if one still appears, `crew send <name> --key Enter`.
 - **`agent already exists`**: `crew kill <name>` first; reports of the old agent are cleared when the name is respawned, so drain your inbox before reusing names.
 - **`gone` agents after a reboot**: tmux sessions don't survive reboots; kill the stale entries.
-- **Empty inbox when you expected messages**: check your identity - are you in the same directory the spawn ran from (or using the same `CREW_IDENTITY`)? `crew list --all` shows which parent each agent reports to.
+- **Empty inbox when you expected messages**: check your identity - are you in the same directory *and tmux pane* the spawn ran from (or using the same `CREW_IDENTITY`)? `crew list --all` shows which parent each agent reports to.

@@ -51,8 +51,9 @@ func connect() (*client.Client, string, error) {
 // identity returns the caller's actor identity: agents identify via
 // CREW_AGENT_NAME; orchestrators via CREW_IDENTITY when pinned explicitly
 // (recommended for long-lived sessions that may change cwd), otherwise
-// scoped to their cwd so two sessions in different worktrees are distinct
-// orchestrators.
+// scoped to their cwd plus tmux pane. The pane keeps two orchestrators in
+// the same directory distinct - cwd alone would merge them, and their
+// agents would report to whichever one adopted last.
 func identity() string {
 	if name := os.Getenv("CREW_AGENT_NAME"); name != "" {
 		return name
@@ -63,6 +64,9 @@ func identity() string {
 	cwd, err := canonicalCwd()
 	if err != nil {
 		cwd = "unknown"
+	}
+	if pane := os.Getenv("TMUX_PANE"); pane != "" {
+		return "orchestrator@" + cwd + "#" + pane
 	}
 	return "orchestrator@" + cwd
 }

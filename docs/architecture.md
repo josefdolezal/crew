@@ -19,7 +19,7 @@ A single Go binary. `crew daemon run` serves; every other subcommand is a thin c
 
 **Completion is a protocol, with heuristic fallbacks.** The daemon can't know when a foreign CLI "finished", so agents self-report through a preamble contract (`crew report`). Screen heuristics back it up: per-runtime patterns detect permission dialogs (`attention`) and idle prompts (`idle`), with output-quiescence as the generic fallback for runtimes whose TUI patterns aren't pinned down.
 
-**No singleton orchestrator.** Identity is `CREW_AGENT_NAME` (agents) / `CREW_IDENTITY` (pinned) / `orchestrator@<canonical cwd>` (default). The canonical cwd comes from the kernel, not `$PWD`, because shells can report case/symlink variants of the same directory. Nesting (agents spawning agents) falls out of the same parent field.
+**No singleton orchestrator.** Identity is `CREW_AGENT_NAME` (agents) / `CREW_IDENTITY` (pinned) / `orchestrator@<canonical cwd>#<tmux pane>` (default; the pane part is dropped outside tmux). The canonical cwd comes from the kernel, not `$PWD`, because shells can report case/symlink variants of the same directory. The pane id keeps two orchestrator sessions in the same directory distinct - cwd alone would merge their identities and route both sets of reports to one inbox. For the same reason push delivery adopts the pane, not the tmux session: injecting into a session lands on its *active* window, the wrong orchestrator when several run as windows of one session. Nesting (agents spawning agents) falls out of the same parent field.
 
 **Unix socket, mode 0600.** Filesystem permissions are the auth boundary. No TCP port, no tokens, single host by design. Do not expose the socket.
 

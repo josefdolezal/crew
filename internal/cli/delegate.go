@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -133,20 +132,16 @@ func adoptCmd() *cobra.Command {
 				}
 				return okMsg("stopped delivering to this session", map[string]string{"identity": id, "status": "unadopted"})
 			}
-			if os.Getenv("TMUX") == "" {
+			pane := os.Getenv("TMUX_PANE")
+			if pane == "" {
 				return fail(fmt.Errorf("adopt requires running inside tmux (fallback: poll with crew wait / crew inbox)"))
 			}
-			out, err := exec.Command("tmux", "display-message", "-p", "#S").Output()
-			if err != nil {
-				return fail(fmt.Errorf("detect tmux session: %w", err))
-			}
-			session := strings.TrimSpace(string(out))
-			if err := c.Adopt(id, session); err != nil {
+			if err := c.Adopt(id, pane); err != nil {
 				return fail(err)
 			}
 			return okMsg(
-				fmt.Sprintf("inbox for %s now delivers into tmux session %q (undo: crew adopt --off)", id, session),
-				map[string]string{"identity": id, "session": session},
+				fmt.Sprintf("inbox for %s now delivers into this tmux pane (%s) (undo: crew adopt --off)", id, pane),
+				map[string]string{"identity": id, "session": pane},
 			)
 		},
 	}

@@ -12,8 +12,8 @@ crew turns you into an orchestrator: spawn interactive agent sessions, hand them
 - `crew` on PATH (`go install github.com/josefdolezal/crew/cmd/crew@latest`) and tmux >= 3.2.
 - The daemon autostarts on first use; no setup step.
 - Add `--json` to any command when you will parse the output. Exit codes matter: `crew wait` returns 0 only if all agents reported done.
-- If your session is long-lived or may change directories, pin your identity once via the `CREW_IDENTITY` env var so agents and inbox messages stay addressed to you.
-- **Push delivery is automatic when you run inside tmux**: your first `crew spawn` registers your session, and reports, agent messages, and events then arrive as `[crew] ...` lines the moment they happen - no polling, no blocking `wait` needed. Not in tmux? `crew wait` (blocking, per agent) and `crew inbox` (pull) are the fallbacks.
+- Your identity is scoped to your cwd and tmux pane, so orchestrators sharing a directory stay distinct. If your session is long-lived, may change directories, or must survive a tmux restart, pin your identity once via the `CREW_IDENTITY` env var so agents and inbox messages stay addressed to you.
+- **Push delivery is automatic when you run inside tmux**: your first `crew spawn` registers your pane, and reports, agent messages, and events then arrive as `[crew] ...` lines the moment they happen - no polling, no blocking `wait` needed. Not in tmux? `crew wait` (blocking, per agent) and `crew inbox` (pull) are the fallbacks.
 
 ## Quick reference
 
